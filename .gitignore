@@ -4,6 +4,7 @@ obj/
 
 # IDE files
 .vs/
+.vscode/
 .vscode/*.user
 .vscode/*.suo
 
