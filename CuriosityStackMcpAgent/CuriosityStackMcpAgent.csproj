@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <IsTestProject>false</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -27,13 +28,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
     
     <!-- LibGit2Sharp for Git operations -->
     <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
     
-    <!-- Testing -->
-    <PackageReference Include="Xunit" Version="2.8.0" />
-    <PackageReference Include="Moq" Version="4.20.70" />
   </ItemGroup>
 
 </Project>

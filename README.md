@@ -13,9 +13,37 @@ Top-level workspace for the Curiosity Stack MCP Agent implementation.
 `CuriosityStackMcpAgent` is a protocol-governed MCP server that exposes:
 - **Finance domain tools** (Xero-oriented operations)
 - **Git domain tools** (repository operations)
+- **Personal MCP domain tools** (Finance, Health, Projects, Journal)
+- **Life orchestrator tool** (`life.status`) for deterministic cross-domain aggregation
 - **Governance approval gates** for write/sensitive actions
+- **SQLite-backed auditable persistence** with startup schema migration
 
 It uses `ModelContextProtocol` with STDIO transport and tool registration via MCP attributes.
+
+## Personal MCP Update (2026-02-19)
+
+The Personal MCP layer has been added as deterministic infrastructure (not prompt-only behavior):
+
+- Shared core infrastructure under `CuriosityStackMcpAgent/Core/`
+	- scope classification, policy metadata, execution context, structured errors
+	- approval tokens with expiry and one-time consumption
+	- tool execution observability with correlation IDs and audit records
+	- SQLite abstraction and versioned schema migration runner
+- Domain modules under `CuriosityStackMcpAgent/Modules/`
+	- `Finance`: `finance.cash_position`, `finance.net_worth`, `finance.margin_exposure`, `finance.monthly_burn`, `finance.add_manual_entry`
+	- `Health`: `health.weight_trend`, `health.training_load`, `health.recovery_score`, `health.log_weight`, `health.log_training_session`
+	- `Projects`: `projects.active`, `projects.deadlines`, `projects.velocity`, `projects.risk_flags`, `projects.create`, `projects.update_status`, `projects.archive`
+	- `Journal`: `journal.add_entry`, `journal.log_decision`, `journal.pattern_analysis`, `journal.goal_alignment`
+- Orchestrator under `CuriosityStackMcpAgent/Agent/`
+	- `life.status` aggregates finance cash position, project deadlines, and health recovery score
+
+Sensitive/write approval workflow:
+- request token: `governance.request_approval`
+- execute guarded tool with `approvalToken`
+
+Local mode defaults:
+- transport: stdio
+- database: `data/personal-mcp.db`
 
 ## Quick Start
 

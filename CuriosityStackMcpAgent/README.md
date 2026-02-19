@@ -2,6 +2,75 @@
 
 A protocol-governed, production-ready Model Context Protocol (MCP) server implementing Xero (Finance) and Git (Version Control) domain tools with built-in governance and approval gate infrastructure.
 
+## 2026-02-19 Personal MCP Infrastructure Update
+
+The server now includes a deterministic Personal MCP life-management layer with modular domains, shared governance/core infrastructure, and auditable SQLite persistence.
+
+### New Modules
+
+- `CuriosityStack.Mcp.Finance` (local ledger/read-write + approval-gated write)
+- `CuriosityStack.Mcp.Health`
+- `CuriosityStack.Mcp.Projects`
+- `CuriosityStack.Mcp.Journal`
+- `CuriosityStack.Agent.LifeOrchestrator`
+
+### Shared Core (`CuriosityStack.Mcp.Core`)
+
+- Scope classification and policy metadata (`ReadOnly`, `Write`, `Sensitive`)
+- Approval tokens with expiry and one-time consumption
+- Tool policy enforcement for gated actions
+- Structured error model
+- Execution context (`ActiveTenant`, `ActiveProject`, correlation ID, actor)
+- SQLite abstraction + schema migration runner
+- Audit log writer recording duration/failure metadata for each tool execution
+
+### SQLite Schema Domains
+
+- Finance: `Accounts`, `Positions`, `CashFlowSnapshots`, `FinanceManualEntries`
+- Health: `WeightLogs`, `TrainingSessions`, `RecoveryMetrics`
+- Projects: `ProjectRegistry`, `Milestones`, `RiskFlags`
+- Journal: `Entries`, `Decisions`, `OutcomeReviews`
+- Governance/Audit: `ApprovalRecords`, `AuditLog`, `SchemaMigrations`
+
+### Personal MCP Tool Catalog
+
+Finance:
+- ReadOnly: `finance.cash_position`, `finance.net_worth`, `finance.margin_exposure`, `finance.monthly_burn`
+- Write (approval required): `finance.add_manual_entry`
+
+Health:
+- ReadOnly: `health.weight_trend`, `health.training_load`, `health.recovery_score`
+- Write: `health.log_weight`, `health.log_training_session`
+
+Projects:
+- ReadOnly: `projects.active`, `projects.deadlines`, `projects.velocity`, `projects.risk_flags`
+- Write: `projects.create`, `projects.update_status`
+- Sensitive (approval required): `projects.archive`
+
+Journal:
+- Write: `journal.add_entry`, `journal.log_decision`
+- ReadOnly: `journal.pattern_analysis`, `journal.goal_alignment`
+
+Orchestrator:
+- `life.status` aggregates:
+  - `finance.cash_position`
+  - `projects.deadlines`
+  - `health.recovery_score`
+
+Governance support:
+- `governance.request_approval` issues explicit approval tokens for write/sensitive operations.
+
+### Deployment Modes
+
+- Mode 1 (current): Local Personal Mode — stdio transport + local SQLite
+- Mode 2 (future): Hosted Secure Mode — HTTP transport + encrypted database + RBAC
+
+### Security Notes
+
+- No automatic external financial transactions in personal tools
+- Sensitive local data protection implemented with Windows DPAPI path
+- Non-Windows keychain integration is explicitly deferred and currently unsupported in code path
+
 ## Architecture Overview
 
 ### Project Structure

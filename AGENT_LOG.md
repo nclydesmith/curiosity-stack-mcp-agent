@@ -1,5 +1,88 @@
 # Curiosity Stack MCP Agent — Agent Log
 
+## Update — 2026-02-19
+
+### Summary
+
+Completed two major updates:
+
+1. Fixed C# Dev Kit/TestHost discovery instability caused by test dependencies/cached host assets.
+2. Implemented Personal MCP infrastructure layer (finance/health/projects/journal/orchestrator) with deterministic governance and SQLite persistence.
+
+### 1) Test Discovery Stabilization
+
+Issue observed:
+- C# Dev Kit attempted discovery against `curiosity-mcp-agent.dll` and aborted with missing `Newtonsoft.Json` from `testhost.deps.json`.
+
+Actions taken:
+- Removed test framework package references from executable project.
+- Explicitly set `<IsTestProject>false</IsTestProject>` in `CuriosityStackMcpAgent.csproj`.
+- Cleared NuGet locals and performed restore/build.
+
+Outcome:
+- CLI build/test paths succeeded.
+- Project is now explicitly non-test and no longer intended as test discovery source.
+
+### 2) Personal MCP Infrastructure Rollout
+
+Implemented deterministic modular life-management infrastructure inside existing .NET MCP host.
+
+#### Core layer added (`Core/`)
+- Scope + approval enums and policy metadata attributes
+- Execution context (`ActiveTenant`, `ActiveProject`, correlation ID, actor)
+- Structured error model
+- SQLite abstraction (`ISqliteStore`, `SqliteStore`)
+- Versioned schema migrator (`ISchemaMigrator`, `SchemaMigrator`)
+- Audit log writer (`IAuditLogWriter`, `AuditLogWriter`)
+- Approval token issuance/validation with expiry and one-time token consumption
+- Tool execution runner for correlation, duration, and failure recording
+- Sensitive data protector (Windows DPAPI path)
+
+#### Domain modules added (`Modules/`)
+- Finance tools and service
+- Health tools and service
+- Projects tools and service
+- Journal tools and service
+
+#### Orchestrator added (`Agent/`)
+- `life.status` tool aggregating:
+  - `finance.cash_position`
+  - `projects.deadlines`
+  - `health.recovery_score`
+
+#### Governance tool added
+- `governance.request_approval` for explicit approval token issuance for write/sensitive operations.
+
+#### Data schema initialized at startup
+
+Tables included:
+- Finance: `Accounts`, `Positions`, `CashFlowSnapshots`, `FinanceManualEntries`
+- Health: `WeightLogs`, `TrainingSessions`, `RecoveryMetrics`
+- Projects: `ProjectRegistry`, `Milestones`, `RiskFlags`
+- Journal: `Entries`, `Decisions`, `OutcomeReviews`
+- Governance/Audit: `ApprovalRecords`, `AuditLog`, `SchemaMigrations`
+
+### 3) Host/DI Wiring
+
+`Program.cs` now registers:
+- Core services (policy enforcement, observability, storage, migration, approval tokens)
+- Domain services/tools for finance, health, projects, journal
+- Orchestrator tool
+- Governance approval tool
+
+Startup now runs schema migration before MCP host run loop.
+
+### 4) Build/Validation Status
+
+Validated successfully:
+- `dotnet restore "MCP Proto.sln"`
+- `dotnet build "MCP Proto.sln" -v minimal`
+
+Status:
+- Compiles cleanly.
+- Personal MCP modules are registered and available for MCP tool discovery.
+- `life.status` exists and routes cross-domain aggregation through structured services.
+
 **Date:** 2026-02-18  
 **Workspace Root:** `C:\Users\nclyd\repos\MCP Proto`  
 **Primary Project:** `CuriosityStackMcpAgent`  

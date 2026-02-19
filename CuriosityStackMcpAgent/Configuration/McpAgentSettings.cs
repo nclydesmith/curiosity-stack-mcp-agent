@@ -28,6 +28,24 @@ public sealed class McpAgentSettings
     /// Governance and approval policies
     /// </summary>
     public GovernanceSettings Governance { get; set; } = new();
+
+    /// <summary>
+    /// Personal MCP storage and deployment mode settings.
+    /// </summary>
+    public PersonalMcpSettings Personal { get; set; } = new();
+}
+
+public sealed class PersonalMcpSettings
+{
+    /// <summary>
+    /// Mode: local-personal or hosted-secure (future).
+    /// </summary>
+    public string Mode { get; set; } = "local-personal";
+
+    /// <summary>
+    /// Local SQLite file path.
+    /// </summary>
+    public string SqlitePath { get; set; } = "data/personal-mcp.db";
 }
 
 public sealed class TransportSettings
